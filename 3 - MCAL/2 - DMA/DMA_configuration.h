@@ -27,7 +27,7 @@
 #define MemIncMode_2           Enable      /*Select [Enable / Disable]*/
 #define PerIncMode_2           Enable      /*Select [Enable / Disable]*/
 #define CircularMode_2         Enable		 /*Select [Enable / Disable]*/
-#define DataDir_1			   RdFromMem   /*Select [RdFromMem / RdFromPer]*/
+#define DataDir_2			   RdFromMem   /*Select [RdFromMem / RdFromPer]*/
 
 /*Set Configuration For Channel 3 */
 #define Mem2Mem_3              Enable		 /*Select [Enable / Disable]*/

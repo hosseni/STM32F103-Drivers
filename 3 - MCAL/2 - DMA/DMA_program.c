@@ -6,57 +6,52 @@
  */
 
 #include <stdio.h>
+
 #include "../Inc/LIB/BIT_MATH.h"
 #include "../Inc/LIB/STD_TYPES.h"
 #include "../Inc/MCAL/DMA/DMA_interface.h"
 #include "../Inc/MCAL/DMA/DMA_private.h"
 #include "../Inc/MCAL/DMA/DMA_configuration.h"
 
-static void	(* DMA_CH1_CallBack)	(void) = NULL;
-static void	(* DMA_CH2_CallBack)	(void) = NULL;
-static void	(* DMA_CH3_CallBack)	(void) = NULL;
-static void	(* DMA_CH4_CallBack)	(void) = NULL;
-static void	(* DMA_CH5_CallBack)	(void) = NULL;
-static void	(* DMA_CH6_CallBack)	(void) = NULL;
-static void	(* DMA_CH7_CallBack)	(void) = NULL;
-
+static void	(* DMA_CH_CallBack[7])	(void);
 
 void MDMA_voidChannelInit (Channel_T Copy_u8DMA_Channel)
 {
 
-#if Copy_u8DMA_Channel == CH_1
+	switch(Copy_u8DMA_Channel)
+	{
+	case CH_1:
 	DMA1 -> channel[Copy_u8DMA_Channel].CCR |= ((DataDir_1<<4)|(CircularMode_1<<5)|(MemIncMode_1<<7)|(PerIncMode_1<<6)
 											    |(Peripheral_Size_1 <<8)|(Memory_Size_1<<10)|(Periority_Level_1<<12)
-												|(Mem2Mem_1<<14));
-#elif Copy_u8DMA_Channel == CH_2
+												|(Mem2Mem_1<<14)); break;
+	case CH_2:
     DMA1 -> channel[Copy_u8DMA_Channel].CCR |= ((DataDir_2<<4)|(CircularMode_2<<5)|(MemIncMode_2<<7)|(PerIncMode_2<<6)
 											    |(Peripheral_Size_2 <<8)|(Memory_Size_2<<10)|(Periority_Level_2<<12)
-											    |(Mem2Mem_2<<14));
-#elif Copy_u8DMA_Channel == CH_3
+											    |(Mem2Mem_2<<14));	break;
+	case CH_3:
     DMA1 -> channel[Copy_u8DMA_Channel].CCR |= ((DataDir_3<<4)|(CircularMode_3<<5)|(MemIncMode_3<<7)|(PerIncMode_3<<6)
 											    |(Peripheral_Size_3 <<8)|(Memory_Size_3<<10)|(Periority_Level_3<<12)
-											    |(Mem2Mem_3<<14));
-#elif Copy_u8DMA_Channel == CH_4
+											    |(Mem2Mem_3<<14));	break;
+	case CH_4:
     DMA1 -> channel[Copy_u8DMA_Channel].CCR |= ((DataDir_4<<4)|(CircularMode_4<<5)|(MemIncMode_4<<7)|(PerIncMode_4<<6)
 											    |(Peripheral_Size_4 <<8)|(Memory_Size_4<<10)|(Periority_Level_4<<12)
-											    |(Mem2Mem_4<<14));
-#elif Copy_u8DMA_Channel == CH_5
+											    |(Mem2Mem_4<<14));	break;
+	case CH_5:
     DMA1 -> channel[Copy_u8DMA_Channel].CCR |= ((DataDir_5<<4)|(CircularMode_5<<5)|(MemIncMode_5<<7)|(PerIncMode_5<<6)
 											    |(Peripheral_Size_5 <<8)|(Memory_Size_5<<10)|(Periority_Level_5<<12)
-											    |(Mem2Mem_5<<14));
-#elif Copy_u8DMA_Channel == CH_6
+											    |(Mem2Mem_5<<14));	break;
+	case CH_6:
     DMA1 -> channel[Copy_u8DMA_Channel].CCR |= ((DataDir_6<<4)|(CircularMode_6<<5)|(MemIncMode_6<<7)|(PerIncMode_6<<6)
 											    |(Peripheral_Size_6 <<8)|(Memory_Size_6<<10)|(Periority_Level_6<<12)
-											    |(Mem2Mem_6<<14));
-#elif Copy_u8DMA_Channel == CH_7
+											    |(Mem2Mem_6<<14));	break;
+	case CH_7:
     DMA1 -> channel[Copy_u8DMA_Channel].CCR |= ((DataDir_7<<4)|(CircularMode_7<<5)|(MemIncMode_7<<7)|(PerIncMode_7<<6)
 											    |(Peripheral_Size_7 <<8)|(Memory_Size_7<<10)|(Periority_Level_7<<12)
-											    |(Mem2Mem_7<<14));
-#endif
-
-    DMA_voidInterruptDisable(CH_1, HalfTransferComplete);
-    DMA_voidInterruptDisable(CH_1, TransferError);
-    DMA_voidInterruptEnable(CH_1, TransferComplete);
+											    |(Mem2Mem_7<<14));	break;
+	}
+    DMA_voidInterruptDisable(Copy_u8DMA_Channel, HalfTransferComplete);
+    DMA_voidInterruptDisable(Copy_u8DMA_Channel, TransferError);
+    DMA_voidInterruptEnable(Copy_u8DMA_Channel, TransferComplete);
 
     MDMA_voidSetChannelStatus (Copy_u8DMA_Channel,channel_disable);
 
@@ -120,30 +115,7 @@ void DMA_SetCallBack(Channel_T Copy_u8DMA_Channel , void (*pf)(void) )
 {
 	if(pf != NULL)
 	{
-		switch(Copy_u8DMA_Channel)
-		{
-		case CH_1 :
-			DMA_CH1_CallBack = pf ;
-			break;
-		case CH_2 :
-			DMA_CH2_CallBack = pf ;
-			break;
-		case CH_3 :
-			DMA_CH3_CallBack = pf ;
-			break;
-		case CH_4 :
-			DMA_CH4_CallBack = pf ;
-			break;
-		case CH_5 :
-			DMA_CH5_CallBack = pf ;
-			break;
-		case CH_6 :
-			DMA_CH6_CallBack = pf ;
-			break;
-		case CH_7 :
-			DMA_CH7_CallBack = pf ;
-			break;
-		}
+		DMA_CH_CallBack [Copy_u8DMA_Channel] = pf;
 	}
 }
 
@@ -155,7 +127,7 @@ void DMA1_Channel1_IRQHandler()
 	DMA_voidClearFlag(CH_1, HTIF);
 	DMA_voidClearFlag(CH_1, TCIF);
 	DMA_voidClearFlag(CH_1, TEIF);
-	DMA_CH1_CallBack();
+	DMA_CH_CallBack[CH_1]();
 }
 
 void DMA1_Channel2_IRQHandler()
@@ -164,7 +136,7 @@ void DMA1_Channel2_IRQHandler()
 	DMA_voidClearFlag(CH_2, HTIF);
 	DMA_voidClearFlag(CH_2, TCIF);
 	DMA_voidClearFlag(CH_2, TEIF);
-	DMA_CH2_CallBack();
+	DMA_CH_CallBack[CH_2]();
 }
 
 void DMA1_Channel3_IRQHandler()
@@ -173,7 +145,7 @@ void DMA1_Channel3_IRQHandler()
 	DMA_voidClearFlag(CH_3, HTIF);
 	DMA_voidClearFlag(CH_3, TCIF);
 	DMA_voidClearFlag(CH_3, TEIF);
-	DMA_CH3_CallBack();
+	DMA_CH_CallBack[CH_3]();
 }
 
 void DMA1_Channel4_IRQHandler()
@@ -182,7 +154,7 @@ void DMA1_Channel4_IRQHandler()
 	DMA_voidClearFlag(CH_4, HTIF);
 	DMA_voidClearFlag(CH_4, TCIF);
 	DMA_voidClearFlag(CH_4, TEIF);
-	DMA_CH4_CallBack();
+	DMA_CH_CallBack[CH_4]();
 }
 
 void DMA1_Channel5_IRQHandler()
@@ -191,7 +163,7 @@ void DMA1_Channel5_IRQHandler()
 	DMA_voidClearFlag(CH_5, HTIF);
 	DMA_voidClearFlag(CH_5, TCIF);
 	DMA_voidClearFlag(CH_5, TEIF);
-	DMA_CH5_CallBack();
+	DMA_CH_CallBack[CH_5]();
 }
 
 void DMA1_Channel6_IRQHandler()
@@ -200,7 +172,7 @@ void DMA1_Channel6_IRQHandler()
 	DMA_voidClearFlag(CH_6, HTIF);
 	DMA_voidClearFlag(CH_6, TCIF);
 	DMA_voidClearFlag(CH_6, TEIF);
-	DMA_CH6_CallBack();
+	DMA_CH_CallBack[CH_6]();
 }
 
 void DMA_Channel7_IRQHandler()
@@ -209,7 +181,7 @@ void DMA_Channel7_IRQHandler()
 	DMA_voidClearFlag(CH_7, HTIF);
 	DMA_voidClearFlag(CH_7, TCIF);
 	DMA_voidClearFlag(CH_7, TEIF);
-	DMA_CH7_CallBack();
+	DMA_CH_CallBack[CH_7]();
 }
 
 
